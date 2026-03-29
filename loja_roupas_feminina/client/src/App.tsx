@@ -30,40 +30,47 @@ function Router() {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex-1">
-                <Router />
-              </main>
-              <Footer />
-            </div>
-          </TooltipProvider>
-        </CartProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+    <>
+      <ErrorBoundary>
+        <ThemeProvider defaultTheme="light">
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster />
+              <div className="flex flex-col min-h-screen">
+                <Header />
+                <main className="flex-1">
+                  <Router />
+                </main>
+                <Footer />
+              </div>
+            </TooltipProvider>
+          </CartProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
+
+      {/* BOTÃO WHATSAPP */}
+      <a
+        href="https://wa.me/5521973203565?text=Olá,%20vim%20pelo%20site%20e%20quero%20comprar"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          backgroundColor: "#25D366",
+          color: "white",
+          padding: "15px",
+          borderRadius: "50%",
+          textDecoration: "none",
+          fontSize: "20px",
+          zIndex: 9999
+        }}
+      >
+        💬
+      </a>
+    </>
   );
 }
 
 export default App;
 <a
-  href="https://wa.me/5599999999999?text=Olá,%20vim%20pelo%20site%20e%20quero%20comprar"
-  target="_blank"
-  style={{
-    position: "fixed",
-    bottom: "20px",
-    right: "20px",
-    backgroundColor: "#25D366",
-    color: "white",
-    padding: "15px",
-    borderRadius: "50%",
-    textDecoration: "none",
-    fontSize: "20px"
-  }}
->
-  💬
-</a>
