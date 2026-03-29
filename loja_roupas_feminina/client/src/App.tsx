@@ -62,11 +62,17 @@ function App() {
           padding: "15px",
           borderRadius: "50%",
           textDecoration: "none",
-          fontSize: "20px",
-          zIndex: 9999
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        💬
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+          alt="WhatsApp"
+          style={{ width: "30px", height: "30px" }}
+        />
       </a>
     </>
   );
