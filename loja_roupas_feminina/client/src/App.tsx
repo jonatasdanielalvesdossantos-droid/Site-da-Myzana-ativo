@@ -32,6 +32,9 @@ function Router() {
 function WhatsAppButton() {
   const { cart } = useCart();
 
+  // Aqui o log para verificar se o cart está atualizando
+  console.log("Cart:", cart);
+
   const generateWhatsAppLink = () => {
     if (!cart.length) return "https://wa.me/5521973203565?text=Carrinho vazio";
 
