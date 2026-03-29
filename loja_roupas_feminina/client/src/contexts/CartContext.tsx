@@ -32,6 +32,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<{ items: CartItem[] }>({ items: [] });
 
+  // Adiciona item ao carrinho
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
       const index = prev.items.findIndex((i) => i.product.id === item.product.id);
@@ -47,12 +48,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // Remove item do carrinho
   const removeFromCart = (productId: number) => {
     setCart((prev) => ({
       items: prev.items.filter((i) => i.product.id !== productId),
     }));
   };
 
+  // Atualiza quantidade do item
   const updateQuantity = (productId: number, quantity: number) => {
     if (quantity <= 0) return removeFromCart(productId);
     setCart((prev) => {
@@ -63,9 +66,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // Limpa carrinho
   const clearCart = () => setCart({ items: [] });
 
-  const cartTotal = cart.items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  // Total do carrinho com proteção contra product undefined
+  const cartTotal = cart.items.reduce(
+    (sum, i) => sum + (i.product?.price ?? 0) * i.quantity,
+    0
+  );
 
   return (
     <CartContext.Provider

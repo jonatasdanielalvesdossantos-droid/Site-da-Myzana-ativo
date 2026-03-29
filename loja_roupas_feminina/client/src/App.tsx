@@ -30,26 +30,29 @@ function Router() {
 
 // Botão WhatsApp que pega os produtos do carrinho
 function WhatsAppButton() {
-  const { cart } = useCart(); // cart é { items: CartItem[], total: number }
+  const { cart, cartTotal } = useCart(); // Corrigido para cartTotal
 
   // Log para verificar se o carrinho está atualizando
-  console.log("Cart:", cart);
+  console.log("Cart:", cart, "Total:", cartTotal);
 
   const generateWhatsAppLink = () => {
-    if (cart.items.length === 0) {
+    if (!cart.items || cart.items.length === 0) {
       return "https://wa.me/5521973203565?text=Carrinho vazio";
     }
 
     let message = "Olá! Gostaria de comprar os seguintes produtos:\n";
 
     cart.items.forEach(item => {
-      message += `- ${item.product.name} x${item.quantity} = R$${(item.product.price * item.quantity).toFixed(2)}`;
+      const price = item.product?.price ?? 0;
+      const name = item.product?.name ?? "Produto";
+
+      message += `- ${name} x${item.quantity} = R$${(price * item.quantity).toFixed(2)}`;
       if (item.selectedSize) message += ` | Tamanho: ${item.selectedSize}`;
       if (item.selectedColor) message += ` | Cor: ${item.selectedColor}`;
       message += "\n";
     });
 
-    message += `Total: R$${cart.total.toFixed(2)}`;
+    message += `Total: R$${(cartTotal ?? 0).toFixed(2)}`; // Proteção caso cartTotal seja undefined
 
     return `https://wa.me/5521973203565?text=${encodeURIComponent(message)}`;
   };

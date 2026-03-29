@@ -14,7 +14,8 @@ export default function Cart() {
     toast.success('Funcionalidade de checkout em desenvolvimento!');
   };
 
-  if (!cart.items || cart.items.length === 0) {
+  // Se não houver itens no carrinho
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container py-12">
@@ -42,60 +43,61 @@ export default function Cart() {
           {/* Cart Items */}
           <div className="lg:col-span-2">
             <div className="bg-card rounded-lg shadow-sm overflow-hidden">
-              {cart.items.map((item, idx) => (
-                <div key={idx} className="border-b border-border last:border-b-0 p-6">
-                  <div className="flex gap-6">
-                    {/* Product Image */}
-                    <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                      <img
-                        src={item.product?.image ?? ''}
-                        alt={item.product?.name ?? 'Produto'}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+              {cart.items.map((item, idx) => {
+                const product = item.product || { id: '', name: 'Produto', price: 0, image: '' };
+                return (
+                  <div key={idx} className="border-b border-border last:border-b-0 p-6">
+                    <div className="flex gap-6">
+                      {/* Product Image */}
+                      <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                        <img
+                          src={product.image || ''}
+                          alt={product.name || 'Produto'}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
 
-                    {/* Product Info */}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground mb-2">
-                        {item.product?.name ?? 'Produto'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {item.selectedSize && <span>Tamanho: {item.selectedSize} | </span>}
-                        {item.selectedColor && <span>Cor: {item.selectedColor}</span>}
-                      </p>
-                      <p className="text-lg font-bold text-foreground">
-                        R$ {(item.product?.price ?? 0).toFixed(2)}
-                      </p>
-                    </div>
+                      {/* Product Info */}
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {item.selectedSize && <span>Tamanho: {item.selectedSize} | </span>}
+                          {item.selectedColor && <span>Cor: {item.selectedColor}</span>}
+                        </p>
+                        <p className="text-lg font-bold text-foreground">
+                          R$ {Number(product.price || 0).toFixed(2)}
+                        </p>
+                      </div>
 
-                    {/* Quantity and Remove */}
-                    <div className="flex flex-col items-end justify-between">
-                      <button
-                        onClick={() => removeFromCart(item.product?.id ?? '')}
-                        className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-
-                      <div className="flex items-center gap-2 bg-muted rounded-lg">
+                      {/* Quantity and Remove */}
+                      <div className="flex flex-col items-end justify-between">
                         <button
-                          onClick={() => updateQuantity(item.product?.id ?? '', item.quantity - 1)}
-                          className="p-2 hover:bg-border rounded-lg transition-colors"
+                          onClick={() => removeFromCart(product.id)}
+                          className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
-                        <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.product?.id ?? '', item.quantity + 1)}
-                          className="p-2 hover:bg-border rounded-lg transition-colors"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
+
+                        <div className="flex items-center gap-2 bg-muted rounded-lg">
+                          <button
+                            onClick={() => updateQuantity(product.id, (item.quantity || 1) - 1)}
+                            className="p-2 hover:bg-border rounded-lg transition-colors"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-8 text-center font-semibold">{item.quantity || 1}</span>
+                          <button
+                            onClick={() => updateQuantity(product.id, (item.quantity || 1) + 1)}
+                            className="p-2 hover:bg-border rounded-lg transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-6">
@@ -116,7 +118,7 @@ export default function Cart() {
               <div className="space-y-4 mb-6 pb-6 border-b border-border">
                 <div className="flex justify-between text-foreground">
                   <span>Subtotal</span>
-                  <span>R$ {(cartTotal ?? 0).toFixed(2)}</span>
+                  <span>R$ {Number(cartTotal || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-foreground">
                   <span>Frete</span>
@@ -130,7 +132,7 @@ export default function Cart() {
 
               <div className="flex justify-between text-2xl font-bold text-foreground mb-6">
                 <span>Total</span>
-                <span>R$ {(cartTotal ?? 0).toFixed(2)}</span>
+                <span>R$ {Number(cartTotal || 0).toFixed(2)}</span>
               </div>
 
               <button
