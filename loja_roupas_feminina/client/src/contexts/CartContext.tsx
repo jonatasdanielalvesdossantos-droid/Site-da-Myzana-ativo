@@ -1,104 +1,102 @@
 /* Design: Elegância Moderna com Textura
-   Contexto de carrinho para gerenciar estado global
+   App principal com rotas, providers e botão WhatsApp integrado
 */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Cart, CartItem, Product } from '@/types';
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFound from "@/pages/NotFound";
+import { Route, Switch } from "wouter";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { CartProvider, useCart } from "./contexts/CartContext";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import Products from "./pages/Products";
+import Cart from "./pages/Cart";
 
-interface CartContextType {
-  cart: Cart;
-  addToCart: (product: Product, quantity: number, size?: string, color?: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  cartTotal: number;
-  cartItemsCount: number;
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<Cart>(() => {
-    const saved = localStorage.getItem('cart');
-    return saved ? JSON.parse(saved) : { items: [], total: 0 };
-  });
-
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
-
-  const calculateTotal = (items: CartItem[]) => {
-    return items.reduce((total, item) => total + item.product.price * item.quantity, 0);
-  };
-
-  const addToCart = (product: Product, quantity: number, size?: string, color?: string) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.items.find(
-        item => item.product.id === product.id && item.selectedSize === size && item.selectedColor === color
-      );
-
-      let newItems;
-      if (existingItem) {
-        newItems = prevCart.items.map(item =>
-          item.product.id === product.id && item.selectedSize === size && item.selectedColor === color
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      } else {
-        newItems = [...prevCart.items, { product, quantity, selectedSize: size, selectedColor: color }];
-      }
-
-      return {
-        items: newItems,
-        total: calculateTotal(newItems)
-      };
-    });
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart(prevCart => {
-      const newItems = prevCart.items.filter(item => item.product.id !== productId);
-      return {
-        items: newItems,
-        total: calculateTotal(newItems)
-      };
-    });
-  };
-
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-
-    setCart(prevCart => {
-      const newItems = prevCart.items.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
-      );
-      return {
-        items: newItems,
-        total: calculateTotal(newItems)
-      };
-    });
-  };
-
-  const clearCart = () => {
-    setCart({ items: [], total: 0 });
-  };
-
-  const cartItemsCount = cart.items.reduce((count, item) => count + item.quantity, 0);
-
+// Rotas do site
+function Router() {
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal: cart.total, cartItemsCount }}>
-      {children}
-    </CartContext.Provider>
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/produtos" component={Products} />
+      <Route path="/carrinho" component={Cart} />
+      <Route path="/404" component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
-export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within CartProvider');
-  }
-  return context;
+// Botão WhatsApp que pega os produtos do carrinho
+function WhatsAppButton() {
+  const { cart } = useCart();
+
+  const generateWhatsAppLink = () => {
+    if (!cart.items.length) return "https://wa.me/5521973203565?text=Carrinho vazio";
+
+    let message = "Olá! Gostaria de comprar os seguintes produtos:\n";
+
+    cart.items.forEach(item => {
+      message += `- ${item.product.name} x${item.quantity} = R$${(item.product.price * item.quantity).toFixed(2)}`;
+      if (item.selectedSize) message += ` | Tamanho: ${item.selectedSize}`;
+      if (item.selectedColor) message += ` | Cor: ${item.selectedColor}`;
+      message += "\n";
+    });
+
+    message += `Total: R$${cart.total.toFixed(2)}`;
+
+    return `https://wa.me/5521973203565?text=${encodeURIComponent(message)}`;
+  };
+
+  return (
+    <a
+      href={generateWhatsAppLink()}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        position: "fixed",
+        bottom: "20px",
+        right: "20px",
+        backgroundColor: "#25D366",
+        padding: "15px",
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+      }}
+    >
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+        alt="WhatsApp"
+        style={{ width: "30px", height: "30px" }}
+      />
+    </a>
+  );
 }
+
+// App principal
+function App() {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="light">
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-1">
+                <Router />
+              </main>
+              <Footer />
+            </div>
+            <WhatsAppButton /> {/* botão flutuante do WhatsApp */}
+          </TooltipProvider>
+        </CartProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;
