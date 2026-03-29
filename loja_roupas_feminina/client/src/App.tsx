@@ -50,7 +50,7 @@ function App() {
 
       {/* BOTÃO WHATSAPP */}
       <a
-        href="https://wa.me/5521973203565?text=Olá,%20vim%20pelo%20site%20e%20quero%20comprar"
+        href="https://wa.me/5521973203565?text=Olá,%20vim%20pelo%20site%20e%20quero%20comprar%20esse%20produto"
         target="_blank"
         rel="noopener noreferrer"
         style={{
