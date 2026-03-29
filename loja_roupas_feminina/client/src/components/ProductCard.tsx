@@ -17,18 +17,22 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { addToCart } = useCart();
 
-  // Função corrigida para adicionar ao carrinho
+  // Função para adicionar ao carrinho com segurança
   const handleAddToCart = () => {
     setIsAdding(true);
 
     addToCart({
-      product: product,
+      product: {
+        ...product,
+        price: product.price ?? 0,           // garante que price exista
+        originalPrice: product.originalPrice ?? 0, // garante que originalPrice exista
+      },
       quantity: 1,
-      selectedSize: product.sizes?.[0],
-      selectedColor: product.colors?.[0],
+      selectedSize: product.sizes?.[0] ?? null,
+      selectedColor: product.colors?.[0] ?? null,
     });
 
-    toast.success(`${product.name} adicionado ao carrinho!`);
+    toast.success(`${product.name ?? 'Produto'} adicionado ao carrinho!`);
     setTimeout(() => setIsAdding(false), 300);
   };
 
@@ -37,7 +41,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     toast.success(isFavorite ? 'Removido dos favoritos' : 'Adicionado aos favoritos');
   };
 
-  const discount = product.originalPrice
+  const discount = (product.originalPrice && product.price)
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
@@ -46,8 +50,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Image Container */}
       <div className="relative overflow-hidden bg-muted h-80 sm:h-96">
         <img
-          src={product.image}
-          alt={product.name}
+          src={product.image ?? ''}
+          alt={product.name ?? 'Produto'}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
 
@@ -78,17 +82,17 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="p-4 sm:p-6">
         {/* Category */}
         <p className="text-xs font-semibold text-accent uppercase tracking-widest mb-2">
-          {product.category}
+          {product.category ?? ''}
         </p>
 
         {/* Name */}
         <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2 hover:text-accent transition-colors">
-          {product.name}
+          {product.name ?? 'Produto'}
         </h3>
 
         {/* Description */}
         <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {product.description}
+          {product.description ?? ''}
         </p>
 
         {/* Rating */}
@@ -97,21 +101,21 @@ export default function ProductCard({ product }: ProductCardProps) {
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'fill-accent text-accent' : 'text-muted'}`}
+                className={`w-4 h-4 ${i < Math.floor(product.rating ?? 0) ? 'fill-accent text-accent' : 'text-muted'}`}
               />
             ))}
           </div>
-          <span className="text-xs text-muted-foreground">({product.reviews})</span>
+          <span className="text-xs text-muted-foreground">({product.reviews ?? 0})</span>
         </div>
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl font-bold text-foreground">
-            R$ {product.price?.toFixed(2) ?? '0.00'}
+            R$ {(product.price ?? 0).toFixed(2)}
           </span>
           {product.originalPrice && (
             <span className="text-sm text-muted-foreground line-through">
-              R$ {product.originalPrice?.toFixed(2) ?? '0.00'}
+              R$ {(product.originalPrice ?? 0).toFixed(2)}
             </span>
           )}
         </div>
