@@ -1,5 +1,5 @@
 /* Design: Elegância Moderna com Textura
-   App principal com rotas e providers
+   App principal com rotas, providers e botão WhatsApp integrado ao carrinho
 */
 
 import { Toaster } from "@/components/ui/sonner";
@@ -8,43 +8,48 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { CartProvider } from "./contexts/CartContext";
+import { CartProvider, useCart } from "./contexts/CartContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import Cart from "./pages/Cart";
-import { useCart } from "./contexts/CartContext"; // pega o estado do carrinho
 
+// Rotas do site
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/produtos"} component={Products} />
-      <Route path={"/carrinho"} component={Cart} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/" component={Home} />
+      <Route path="/produtos" component={Products} />
+      <Route path="/carrinho" component={Cart} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// Componente do botão WhatsApp integrado ao carrinho
+// Botão WhatsApp que pega os produtos do carrinho
 function WhatsAppButton() {
-  const { cart } = useCart();
+  const { cart } = useCart(); // cart é { items: CartItem[], total: number }
 
-  // Aqui o log para verificar se o cart está atualizando
+  // Log para verificar se o carrinho está atualizando
   console.log("Cart:", cart);
 
   const generateWhatsAppLink = () => {
-    if (!cart.length) return "https://wa.me/5521973203565?text=Carrinho vazio";
+    if (cart.items.length === 0) {
+      return "https://wa.me/5521973203565?text=Carrinho vazio";
+    }
 
     let message = "Olá! Gostaria de comprar os seguintes produtos:\n";
-    cart.forEach(item => {
-      message += `- ${item.name} x${item.quantity} = R$${(item.price * item.quantity).toFixed(2)}\n`;
+
+    cart.items.forEach(item => {
+      message += `- ${item.product.name} x${item.quantity} = R$${(item.product.price * item.quantity).toFixed(2)}`;
+      if (item.selectedSize) message += ` | Tamanho: ${item.selectedSize}`;
+      if (item.selectedColor) message += ` | Cor: ${item.selectedColor}`;
+      message += "\n";
     });
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    message += `Total: R$${total.toFixed(2)}`;
+    message += `Total: R$${cart.total.toFixed(2)}`;
 
     return `https://wa.me/5521973203565?text=${encodeURIComponent(message)}`;
   };
@@ -76,6 +81,7 @@ function WhatsAppButton() {
   );
 }
 
+// App principal
 function App() {
   return (
     <ErrorBoundary>
@@ -90,7 +96,7 @@ function App() {
               </main>
               <Footer />
             </div>
-            <WhatsAppButton /> {/* botão flutuante */}
+            <WhatsAppButton /> {/* botão flutuante do WhatsApp */}
           </TooltipProvider>
         </CartProvider>
       </ThemeProvider>
