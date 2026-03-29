@@ -1,102 +1,67 @@
-/* Design: Elegância Moderna com Textura
-   App principal com rotas, providers e botão WhatsApp integrado
-*/
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { CartProvider, useCart } from "@/contexts/CartContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import Home from "@/pages/Home";
-import Products from "@/pages/Products";
-import Cart from "@/pages/Cart";
-
-// Rotas do site
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/produtos" component={Products} />
-      <Route path="/carrinho" component={Cart} />
-      <Route path="/404" component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
-  );
+// Tipagem do produto e item do carrinho
+interface Product {
+  id: number;
+  name: string;
+  price: number;
 }
 
-// Botão WhatsApp que pega os produtos do carrinho
-function WhatsAppButton() {
-  const { cart } = useCart();
+interface CartItem {
+  product: Product;
+  quantity: number;
+  selectedSize?: string;
+  selectedColor?: string;
+}
 
-  const generateWhatsAppLink = () => {
-    if (!cart.items.length) return "https://wa.me/5521973203565?text=Carrinho vazio";
+// Tipagem do carrinho
+interface Cart {
+  items: CartItem[];
+  total: number;
+}
 
-    let message = "Olá! Gostaria de comprar os seguintes produtos:\n";
+// Contexto do carrinho
+interface CartContextType {
+  cart: Cart;
+  addToCart: (item: CartItem) => void;
+  clearCart: () => void;
+}
 
-    cart.items.forEach(item => {
-      message += `- ${item.product.name} x${item.quantity} = R$${(item.product.price * item.quantity).toFixed(2)}`;
-      if (item.selectedSize) message += ` | Tamanho: ${item.selectedSize}`;
-      if (item.selectedColor) message += ` | Cor: ${item.selectedColor}`;
-      message += "\n";
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+// Provider
+export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const [cart, setCart] = useState<Cart>({ items: [], total: 0 });
+
+  const addToCart = (item: CartItem) => {
+    setCart(prev => {
+      const existingIndex = prev.items.findIndex(i => i.product.id === item.product.id);
+      let newItems = [...prev.items];
+
+      if (existingIndex >= 0) {
+        newItems[existingIndex].quantity += item.quantity;
+      } else {
+        newItems.push(item);
+      }
+
+      const newTotal = newItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+
+      return { items: newItems, total: newTotal };
     });
-
-    message += `Total: R$${cart.total.toFixed(2)}`;
-
-    return `https://wa.me/5521973203565?text=${encodeURIComponent(message)}`;
   };
 
-  return (
-    <a
-      href={generateWhatsAppLink()}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{
-        position: "fixed",
-        bottom: "20px",
-        right: "20px",
-        backgroundColor: "#25D366",
-        padding: "15px",
-        borderRadius: "50%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-      }}
-    >
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-        alt="WhatsApp"
-        style={{ width: "30px", height: "30px" }}
-      />
-    </a>
-  );
-}
+  const clearCart = () => setCart({ items: [], total: 0 });
 
-// App principal
-function App() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex-1">
-                <Router />
-              </main>
-              <Footer />
-            </div>
-            <WhatsAppButton /> {/* botão flutuante do WhatsApp */}
-          </TooltipProvider>
-        </CartProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+    <CartContext.Provider value={{ cart, addToCart, clearCart }}>
+      {children}
+    </CartContext.Provider>
   );
-}
+};
 
-export default App;
+// Hook para usar o carrinho
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) throw new Error("useCart deve ser usado dentro de CartProvider");
+  return context;
+};
