@@ -1,5 +1,5 @@
 /* Design: Elegância Moderna com Textura
-   Header com navegação e carrinho
+   Header com navegação e carrinho funcionando corretamente
 */
 
 import { ShoppingBag, Menu, X } from 'lucide-react';
@@ -9,7 +9,10 @@ import { Link } from 'wouter';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { cartItemsCount } = useCart();
+  const { cart } = useCart(); // pega o cart completo
+
+  // Total de itens no carrinho
+  const cartItemsCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <header className="bg-card text-card-foreground shadow-sm sticky top-0 z-50">
@@ -24,23 +27,15 @@ export default function Header() {
           </a>
         </Link>
 
-        {/* Navigation - Desktop */}
+        {/* Navegação Desktop */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/">
-            <a className="text-foreground hover:text-accent transition-colors font-medium">Home</a>
-          </Link>
-          <Link href="/produtos">
-            <a className="text-foreground hover:text-accent transition-colors font-medium">Produtos</a>
-          </Link>
-          <Link href="/sobre">
-            <a className="text-foreground hover:text-accent transition-colors font-medium">Sobre</a>
-          </Link>
-          <Link href="/contato">
-            <a className="text-foreground hover:text-accent transition-colors font-medium">Contato</a>
-          </Link>
+          <Link href="/"><a className="text-foreground hover:text-accent transition-colors font-medium">Home</a></Link>
+          <Link href="/produtos"><a className="text-foreground hover:text-accent transition-colors font-medium">Produtos</a></Link>
+          <Link href="/sobre"><a className="text-foreground hover:text-accent transition-colors font-medium">Sobre</a></Link>
+          <Link href="/contato"><a className="text-foreground hover:text-accent transition-colors font-medium">Contato</a></Link>
         </nav>
 
-        {/* Cart and Menu */}
+        {/* Cart e Menu Mobile */}
         <div className="flex items-center gap-4">
           <Link href="/carrinho">
             <a className="relative p-2 hover:bg-muted hover:opacity-80 rounded-lg transition-colors">
@@ -53,7 +48,7 @@ export default function Header() {
             </a>
           </Link>
 
-          {/* Mobile Menu Button */}
+          {/* Botão Mobile Menu */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden p-2 hover:bg-muted hover:opacity-80 rounded-lg transition-colors"
@@ -63,22 +58,14 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Navegação Mobile */}
       {menuOpen && (
         <nav className="md:hidden bg-background border-t border-border">
           <div className="container py-4 flex flex-col gap-4">
-            <Link href="/">
-              <a className="text-foreground hover:text-accent transition-colors font-medium">Home</a>
-            </Link>
-            <Link href="/produtos">
-              <a className="text-foreground hover:text-accent transition-colors font-medium">Produtos</a>
-            </Link>
-            <Link href="/sobre">
-              <a className="text-foreground hover:text-accent transition-colors font-medium">Sobre</a>
-            </Link>
-            <Link href="/contato">
-              <a className="text-foreground hover:text-accent transition-colors font-medium">Contato</a>
-            </Link>
+            <Link href="/"><a className="text-foreground hover:text-accent transition-colors font-medium">Home</a></Link>
+            <Link href="/produtos"><a className="text-foreground hover:text-accent transition-colors font-medium">Produtos</a></Link>
+            <Link href="/sobre"><a className="text-foreground hover:text-accent transition-colors font-medium">Sobre</a></Link>
+            <Link href="/contato"><a className="text-foreground hover:text-accent transition-colors font-medium">Contato</a></Link>
           </div>
         </nav>
       )}
