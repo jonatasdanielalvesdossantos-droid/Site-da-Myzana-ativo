@@ -17,9 +17,17 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const { addToCart } = useCart();
 
+  // Função corrigida para adicionar ao carrinho
   const handleAddToCart = () => {
     setIsAdding(true);
-    addToCart(product, 1, product.sizes?.[0], product.colors?.[0]);
+
+    addToCart({
+      product: product,
+      quantity: 1,
+      selectedSize: product.sizes?.[0],
+      selectedColor: product.colors?.[0],
+    });
+
     toast.success(`${product.name} adicionado ao carrinho!`);
     setTimeout(() => setIsAdding(false), 300);
   };
